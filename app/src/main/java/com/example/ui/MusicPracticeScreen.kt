@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +25,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -58,12 +62,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.model.DefaultSongs
+import com.example.model.GuitarHeroTrackGenerator
 import com.example.model.SongSection
 import com.example.ui.components.AudioPlayerBar
 import com.example.ui.components.ChordTabDisplay
+import com.example.ui.components.GuitarHeroVisualizer
 import com.example.ui.components.SectionEditorDialog
 import com.example.ui.components.SongSectionsPanel
+import com.example.ui.components.VideoExportDialog
 import com.example.viewmodel.MusicPracticeViewModel
+
+enum class PracticeViewMode {
+    GUITAR_HERO,
+    CHORD_TAB
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,9 +97,20 @@ fun MusicPracticeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showSongMenu by remember { mutableStateOf(false) }
 
-    // Editor state
+    // Active view mode: Guitar Hero Visualizer vs Chord/Tab View
+    var activeViewMode by remember { mutableStateOf(PracticeViewMode.GUITAR_HERO) }
+
+    // Video Export dialog state
+    var isExportVideoDialogOpen by remember { mutableStateOf(false) }
+
+    // Section Editor dialog state
     var isEditorOpen by remember { mutableStateOf(false) }
     var sectionToEdit by remember { mutableStateOf<SongSection?>(null) }
+
+    // Generate Guitar Hero track notes & section markers in sync with current song
+    val (guitarHeroNotes, guitarHeroMarkers) = remember(currentSong) {
+        GuitarHeroTrackGenerator.generateTrack(currentSong)
+    }
 
     LaunchedEffect(statusMessage) {
         statusMessage?.let {
@@ -138,6 +161,18 @@ fun MusicPracticeScreen(
                     }
                 },
                 actions = {
+                    // Video Export Direct Button in Top Bar
+                    IconButton(
+                        onClick = { isExportVideoDialogOpen = true },
+                        modifier = Modifier.testTag("top_export_video_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Videocam,
+                            contentDescription = "Export Video",
+                            tint = Color(0xFFF59E0B)
+                        )
+                    }
+
                     // Song Preset Selector
                     Box {
                         IconButton(
@@ -212,8 +247,84 @@ fun MusicPracticeScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // View Mode Switcher Pill Bar (Guitar Hero vs Tab/Chord)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF131B2E))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Guitar Hero Mode Tab
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color(0xFFEF4444) else Color.Transparent
+                            )
+                            .clickable { activeViewMode = PracticeViewMode.GUITAR_HERO }
+                            .padding(vertical = 8.dp)
+                            .testTag("tab_guitar_hero"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Bolt,
+                                contentDescription = null,
+                                tint = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color.White else Color(0xFF94A3B8),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Guitar Hero",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color.White else Color(0xFF94A3B8)
+                            )
+                        }
+                    }
+
+                    // Tab & Chord Mode Tab
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (activeViewMode == PracticeViewMode.CHORD_TAB) Color(0xFF38BDF8) else Color.Transparent
+                            )
+                            .clickable { activeViewMode = PracticeViewMode.CHORD_TAB }
+                            .padding(vertical = 8.dp)
+                            .testTag("tab_chord_display"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MusicNote,
+                                contentDescription = null,
+                                tint = if (activeViewMode == PracticeViewMode.CHORD_TAB) Color(0xFF0F172A) else Color(0xFF94A3B8),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Tab & Kord",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (activeViewMode == PracticeViewMode.CHORD_TAB) Color(0xFF0F172A) else Color(0xFF94A3B8)
+                            )
+                        }
+                    }
+                }
+            }
+
             // Active Section Header Banner
             item {
                 ActiveSectionBanner(
@@ -223,15 +334,28 @@ fun MusicPracticeScreen(
                 )
             }
 
-            // Interactive Tab / Chord Display Card
-            item {
-                ChordTabDisplay(
-                    activeSection = activeSection,
-                    activeChordInfo = activeChordInfo,
-                    onChordClick = { chordItem ->
-                        // Quick feedback
-                    }
-                )
+            // Primary Interactive Display: Guitar Hero or Tab & Chord
+            if (activeViewMode == PracticeViewMode.GUITAR_HERO) {
+                item {
+                    GuitarHeroVisualizer(
+                        notes = guitarHeroNotes,
+                        sectionMarkers = guitarHeroMarkers,
+                        currentAudioTimeSec = currentPositionSec,
+                        bpm = currentSong.bpm,
+                        isPlaying = isPlaying,
+                        onExportVideoClick = { isExportVideoDialogOpen = true }
+                    )
+                }
+            } else {
+                item {
+                    ChordTabDisplay(
+                        activeSection = activeSection,
+                        activeChordInfo = activeChordInfo,
+                        onChordClick = {
+                            // Quick chord feedback
+                        }
+                    )
+                }
             }
 
             // Song Structure (Patokan Latihan) Panel
@@ -258,6 +382,18 @@ fun MusicPracticeScreen(
                 )
             }
         }
+    }
+
+    // Video Export Dialog (Prompt Feature 3)
+    if (isExportVideoDialogOpen) {
+        VideoExportDialog(
+            song = currentSong,
+            activeSection = activeSection,
+            notes = guitarHeroNotes,
+            sectionMarkers = guitarHeroMarkers,
+            currentAudioTimeSec = currentPositionSec,
+            onDismiss = { isExportVideoDialogOpen = false }
+        )
     }
 
     // Section Editor Dialog
