@@ -1,9 +1,14 @@
 package com.example.ui
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.DashboardCustomize
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.RestartAlt
@@ -55,6 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -74,7 +81,8 @@ import com.example.viewmodel.MusicPracticeViewModel
 
 enum class PracticeViewMode {
     GUITAR_HERO,
-    CHORD_TAB
+    CHORD_TAB,
+    SPLIT_BOTH
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,8 +105,8 @@ fun MusicPracticeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showSongMenu by remember { mutableStateOf(false) }
 
-    // Active view mode: Guitar Hero Visualizer vs Chord/Tab View
-    var activeViewMode by remember { mutableStateOf(PracticeViewMode.GUITAR_HERO) }
+    // Active theme / view mode: Guitar Hero vs Tabulasi Standar vs Keduanya
+    var activeViewMode by remember { mutableStateOf(PracticeViewMode.CHORD_TAB) }
 
     // Video Export dialog state
     var isExportVideoDialogOpen by remember { mutableStateOf(false) }
@@ -134,13 +142,15 @@ fun MusicPracticeScreen(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF59E0B)),
+                                .background(
+                                    if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color(0xFFEF4444) else Color(0xFFF59E0B)
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Audiotrack,
+                                imageVector = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Icons.Default.Bolt else Icons.Default.Audiotrack,
                                 contentDescription = null,
-                                tint = Color(0xFF0F172A),
+                                tint = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color.White else Color(0xFF0F172A),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -152,15 +162,37 @@ fun MusicPracticeScreen(
                                 color = Color.White
                             )
                             Text(
-                                text = "${currentSong.bpm} BPM  •  ${currentSong.sections.size} Bagian",
+                                text = when (activeViewMode) {
+                                    PracticeViewMode.GUITAR_HERO -> "Tema: Guitar Hero (${currentSong.bpm} BPM)"
+                                    PracticeViewMode.CHORD_TAB -> "Tema: Tabulasi Standar (${currentSong.bpm} BPM)"
+                                    PracticeViewMode.SPLIT_BOTH -> "Tema: Keduanya (${currentSong.bpm} BPM)"
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 11.sp,
-                                color = Color(0xFF94A3B8)
+                                color = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color(0xFFF97316) else Color(0xFF38BDF8)
                             )
                         }
                     }
                 },
                 actions = {
+                    // Quick Toggle between Guitar Hero & Tabulasi Standar
+                    IconButton(
+                        onClick = {
+                            activeViewMode = if (activeViewMode == PracticeViewMode.GUITAR_HERO) {
+                                PracticeViewMode.CHORD_TAB
+                            } else {
+                                PracticeViewMode.GUITAR_HERO
+                            }
+                        },
+                        modifier = Modifier.testTag("toggle_theme_button")
+                    ) {
+                        Icon(
+                            imageVector = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Icons.Default.MusicNote else Icons.Default.Bolt,
+                            contentDescription = "Ganti Tema",
+                            tint = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color(0xFF38BDF8) else Color(0xFFEF4444)
+                        )
+                    }
+
                     // Video Export Direct Button in Top Bar
                     IconButton(
                         onClick = { isExportVideoDialogOpen = true },
@@ -249,80 +281,12 @@ fun MusicPracticeScreen(
             contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // View Mode Switcher Pill Bar (Guitar Hero vs Tab/Chord)
+            // Theme / Mode Selector Card
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF131B2E))
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    // Guitar Hero Mode Tab
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color(0xFFEF4444) else Color.Transparent
-                            )
-                            .clickable { activeViewMode = PracticeViewMode.GUITAR_HERO }
-                            .padding(vertical = 8.dp)
-                            .testTag("tab_guitar_hero"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Bolt,
-                                contentDescription = null,
-                                tint = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color.White else Color(0xFF94A3B8),
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = "Guitar Hero",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = if (activeViewMode == PracticeViewMode.GUITAR_HERO) Color.White else Color(0xFF94A3B8)
-                            )
-                        }
-                    }
-
-                    // Tab & Chord Mode Tab
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                if (activeViewMode == PracticeViewMode.CHORD_TAB) Color(0xFF38BDF8) else Color.Transparent
-                            )
-                            .clickable { activeViewMode = PracticeViewMode.CHORD_TAB }
-                            .padding(vertical = 8.dp)
-                            .testTag("tab_chord_display"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MusicNote,
-                                contentDescription = null,
-                                tint = if (activeViewMode == PracticeViewMode.CHORD_TAB) Color(0xFF0F172A) else Color(0xFF94A3B8),
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = "Tab & Kord",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = if (activeViewMode == PracticeViewMode.CHORD_TAB) Color(0xFF0F172A) else Color(0xFF94A3B8)
-                            )
-                        }
-                    }
-                }
+                ThemeSelectionCard(
+                    activeMode = activeViewMode,
+                    onSelectMode = { activeViewMode = it }
+                )
             }
 
             // Active Section Header Banner
@@ -334,27 +298,52 @@ fun MusicPracticeScreen(
                 )
             }
 
-            // Primary Interactive Display: Guitar Hero or Tab & Chord
-            if (activeViewMode == PracticeViewMode.GUITAR_HERO) {
-                item {
-                    GuitarHeroVisualizer(
-                        notes = guitarHeroNotes,
-                        sectionMarkers = guitarHeroMarkers,
-                        currentAudioTimeSec = currentPositionSec,
-                        bpm = currentSong.bpm,
-                        isPlaying = isPlaying,
-                        onExportVideoClick = { isExportVideoDialogOpen = true }
-                    )
+            // Primary Interactive Display based on chosen theme:
+            when (activeViewMode) {
+                PracticeViewMode.GUITAR_HERO -> {
+                    item {
+                        GuitarHeroVisualizer(
+                            notes = guitarHeroNotes,
+                            sectionMarkers = guitarHeroMarkers,
+                            currentAudioTimeSec = currentPositionSec,
+                            bpm = currentSong.bpm,
+                            isPlaying = isPlaying,
+                            onExportVideoClick = { isExportVideoDialogOpen = true }
+                        )
+                    }
                 }
-            } else {
-                item {
-                    ChordTabDisplay(
-                        activeSection = activeSection,
-                        activeChordInfo = activeChordInfo,
-                        onChordClick = {
-                            // Quick chord feedback
+
+                PracticeViewMode.CHORD_TAB -> {
+                    item {
+                        ChordTabDisplay(
+                            activeSection = activeSection,
+                            activeChordInfo = activeChordInfo,
+                            onChordClick = {
+                                // Quick feedback
+                            }
+                        )
+                    }
+                }
+
+                PracticeViewMode.SPLIT_BOTH -> {
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            GuitarHeroVisualizer(
+                                notes = guitarHeroNotes,
+                                sectionMarkers = guitarHeroMarkers,
+                                currentAudioTimeSec = currentPositionSec,
+                                bpm = currentSong.bpm,
+                                isPlaying = isPlaying,
+                                onExportVideoClick = { isExportVideoDialogOpen = true }
+                            )
+
+                            ChordTabDisplay(
+                                activeSection = activeSection,
+                                activeChordInfo = activeChordInfo,
+                                onChordClick = {}
+                            )
                         }
-                    )
+                    }
                 }
             }
 
@@ -384,7 +373,7 @@ fun MusicPracticeScreen(
         }
     }
 
-    // Video Export Dialog (Prompt Feature 3)
+    // Video Export Dialog
     if (isExportVideoDialogOpen) {
         VideoExportDialog(
             song = currentSong,
@@ -412,6 +401,207 @@ fun MusicPracticeScreen(
                 viewModel.deleteSection(id)
             }
         )
+    }
+}
+
+/**
+ * Prominent Theme / View Mode Selector Card
+ */
+@Composable
+private fun ThemeSelectionCard(
+    activeMode: PracticeViewMode,
+    onSelectMode: (PracticeViewMode) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("theme_selection_card"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF1E293B))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DashboardCustomize,
+                        contentDescription = null,
+                        tint = Color(0xFFF59E0B),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "PILIH TEMA TAMPILAN",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF94A3B8),
+                        letterSpacing = 0.5.sp
+                    )
+                }
+
+                Text(
+                    text = when (activeMode) {
+                        PracticeViewMode.GUITAR_HERO -> "Tema Guitar Hero"
+                        PracticeViewMode.CHORD_TAB -> "Tema Tabulasi Standar"
+                        PracticeViewMode.SPLIT_BOTH -> "Tema Gabungan"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = when (activeMode) {
+                        PracticeViewMode.GUITAR_HERO -> Color(0xFFEF4444)
+                        PracticeViewMode.CHORD_TAB -> Color(0xFF38BDF8)
+                        PracticeViewMode.SPLIT_BOTH -> Color(0xFFF59E0B)
+                    }
+                )
+            }
+
+            // 3 Theme Option Buttons: Tab Standar, Guitar Hero, Keduanya
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Option 1: Tabulasi Standar (Awal)
+                val isStandardSelected = activeMode == PracticeViewMode.CHORD_TAB
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isStandardSelected) Color(0xFF0369A1) else Color(0xFF0F172A)
+                        )
+                        .border(
+                            width = if (isStandardSelected) 1.5.dp else 1.dp,
+                            color = if (isStandardSelected) Color(0xFF38BDF8) else Color(0xFF334155),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .clickable { onSelectMode(PracticeViewMode.CHORD_TAB) }
+                        .padding(vertical = 10.dp, horizontal = 8.dp)
+                        .testTag("theme_button_tab_standard"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MusicNote,
+                            contentDescription = null,
+                            tint = if (isStandardSelected) Color.White else Color(0xFF38BDF8),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Tab Standar",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Fretboard & Tab",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            color = if (isStandardSelected) Color(0xFFE0F2FE) else Color(0xFF94A3B8)
+                        )
+                    }
+                }
+
+                // Option 2: Guitar Hero Mode
+                val isHeroSelected = activeMode == PracticeViewMode.GUITAR_HERO
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isHeroSelected) Color(0xFFB91C1C) else Color(0xFF0F172A)
+                        )
+                        .border(
+                            width = if (isHeroSelected) 1.5.dp else 1.dp,
+                            color = if (isHeroSelected) Color(0xFFEF4444) else Color(0xFF334155),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .clickable { onSelectMode(PracticeViewMode.GUITAR_HERO) }
+                        .padding(vertical = 10.dp, horizontal = 8.dp)
+                        .testTag("theme_button_guitar_hero"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = null,
+                            tint = if (isHeroSelected) Color.White else Color(0xFFEF4444),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Guitar Hero",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Balok Meluncur",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            color = if (isHeroSelected) Color(0xFFFEE2E2) else Color(0xFF94A3B8)
+                        )
+                    }
+                }
+
+                // Option 3: Split Both
+                val isBothSelected = activeMode == PracticeViewMode.SPLIT_BOTH
+                Box(
+                    modifier = Modifier
+                        .weight(0.9f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isBothSelected) Color(0xFFB45309) else Color(0xFF0F172A)
+                        )
+                        .border(
+                            width = if (isBothSelected) 1.5.dp else 1.dp,
+                            color = if (isBothSelected) Color(0xFFF59E0B) else Color(0xFF334155),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .clickable { onSelectMode(PracticeViewMode.SPLIT_BOTH) }
+                        .padding(vertical = 10.dp, horizontal = 6.dp)
+                        .testTag("theme_button_split_both"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "🔀",
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "Keduanya",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Split View",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            color = if (isBothSelected) Color(0xFFFEF3C7) else Color(0xFF94A3B8)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
