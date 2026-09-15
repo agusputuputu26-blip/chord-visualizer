@@ -41,12 +41,29 @@ data class GuitarChord(
  */
 data class TabMeasure(
     val label: String,
-    val notes: List<TabColumn> // sequential beat/sub-beat columns
+    val notes: List<TabColumn> = emptyList()
 )
 
 data class TabColumn(
-    val beatOffset: Float, // 0.0, 1.0, 2.0, 3.0
-    val strings: Map<Int, Int> // String index (0=high e, 1=B, 2=G, 3=D, 4=A, 5=low E) -> fret number
+    val beatOffset: Float,
+    val strings: Map<Int, Int>
+)
+
+/**
+ * Lyric line with synchronized chords and timestamps for auto-scrolling karaoke chord view.
+ */
+data class LyricLine(
+    val id: String,
+    val startTimeSec: Float,
+    val endTimeSec: Float,
+    val text: String,
+    val chordWords: List<ChordLyricWord> = emptyList()
+)
+
+data class ChordLyricWord(
+    val chord: String,
+    val word: String,
+    val timestampSec: Float
 )
 
 /**
@@ -59,6 +76,7 @@ data class PracticeSong(
     val bpm: Int,
     val totalDurationSec: Float,
     val sections: List<SongSection>,
+    val lyrics: List<LyricLine> = emptyList(),
     val customAudioUri: String? = null,
     val audioFileName: String? = null
 )

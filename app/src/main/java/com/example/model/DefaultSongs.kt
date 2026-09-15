@@ -90,23 +90,6 @@ object ChordLibrary {
 }
 
 object DefaultSongs {
-    // Helper to generate tabs
-    private fun createArpeggioTab(chordName: String): TabMeasure {
-        val c = ChordLibrary.getChord(chordName)
-        // string indices: 0=e, 1=B, 2=G, 3=D, 4=A, 5=E
-        val notes = mutableListOf<TabColumn>()
-        // beat 1: bass note
-        val bassString = if (c.frets[0] >= 0) 5 else if (c.frets[1] >= 0) 4 else 3
-        val bassFret = if (bassString == 5) c.frets[0] else if (bassString == 4) c.frets[1] else c.frets[2]
-        notes.add(TabColumn(0.0f, mapOf(bassString to bassFret)))
-        // beat 2: D or G string
-        notes.add(TabColumn(1.0f, mapOf(3 to c.frets[2].coerceAtLeast(0))))
-        // beat 3: B string
-        notes.add(TabColumn(2.0f, mapOf(1 to c.frets[4].coerceAtLeast(0))))
-        // beat 4: high e string
-        notes.add(TabColumn(3.0f, mapOf(0 to c.frets[5].coerceAtLeast(0))))
-        return TabMeasure(label = chordName, notes = notes)
-    }
 
     fun getPopBalladSong(): PracticeSong {
         val s1Intro = SongSection(
@@ -114,78 +97,54 @@ object DefaultSongs {
             name = "Intro",
             startTimeSec = 0f,
             endTimeSec = 12f,
-            colorHex = 0xFF6366F1, // Indigo
+            colorHex = 0xFF6366F1,
             chords = listOf(
                 ChordItem("G", 4, ChordLibrary.G),
                 ChordItem("Em", 4, ChordLibrary.Em),
                 ChordItem("C", 4, ChordLibrary.C),
                 ChordItem("D", 4, ChordLibrary.D)
-            ),
-            tabNotation = listOf(
-                createArpeggioTab("G"),
-                createArpeggioTab("Em"),
-                createArpeggioTab("C"),
-                createArpeggioTab("D")
             )
         )
 
         val s2Verse = SongSection(
             id = "sec_verse1",
-            name = "Verse 1",
+            name = "Bait 1 (Verse)",
             startTimeSec = 12f,
             endTimeSec = 28f,
-            colorHex = 0xFF10B981, // Emerald
+            colorHex = 0xFF10B981,
             chords = listOf(
                 ChordItem("G", 4, ChordLibrary.G),
                 ChordItem("Em", 4, ChordLibrary.Em),
                 ChordItem("C", 4, ChordLibrary.C),
                 ChordItem("D", 4, ChordLibrary.D)
-            ),
-            tabNotation = listOf(
-                createArpeggioTab("G"),
-                createArpeggioTab("Em"),
-                createArpeggioTab("C"),
-                createArpeggioTab("D")
             )
         )
 
         val s3Chorus = SongSection(
             id = "sec_chorus",
-            name = "Chorus",
+            name = "Reff (Chorus)",
             startTimeSec = 28f,
             endTimeSec = 44f,
-            colorHex = 0xFFF59E0B, // Amber
+            colorHex = 0xFFF59E0B,
             chords = listOf(
                 ChordItem("C", 4, ChordLibrary.C),
                 ChordItem("D", 4, ChordLibrary.D),
                 ChordItem("G", 4, ChordLibrary.G),
                 ChordItem("Em", 4, ChordLibrary.Em)
-            ),
-            tabNotation = listOf(
-                createArpeggioTab("C"),
-                createArpeggioTab("D"),
-                createArpeggioTab("G"),
-                createArpeggioTab("Em")
             )
         )
 
         val s4Interlude = SongSection(
             id = "sec_interlude",
-            name = "Interlude / Solo",
+            name = "Interlude",
             startTimeSec = 44f,
             endTimeSec = 56f,
-            colorHex = 0xFFEC4899, // Pink
+            colorHex = 0xFFEC4899,
             chords = listOf(
                 ChordItem("Am", 4, ChordLibrary.Am),
                 ChordItem("Bm", 4, ChordLibrary.Bm),
                 ChordItem("C", 4, ChordLibrary.C),
                 ChordItem("D", 4, ChordLibrary.D)
-            ),
-            tabNotation = listOf(
-                createArpeggioTab("Am"),
-                createArpeggioTab("Bm"),
-                createArpeggioTab("C"),
-                createArpeggioTab("D")
             )
         )
 
@@ -194,97 +153,239 @@ object DefaultSongs {
             name = "Outro",
             startTimeSec = 56f,
             endTimeSec = 68f,
-            colorHex = 0xFF8B5CF6, // Purple
+            colorHex = 0xFF8B5CF6,
             chords = listOf(
                 ChordItem("C", 4, ChordLibrary.C),
                 ChordItem("D", 4, ChordLibrary.D),
                 ChordItem("G", 4, ChordLibrary.G)
+            )
+        )
+
+        val lyrics = listOf(
+            LyricLine(
+                id = "l_intro",
+                startTimeSec = 0f,
+                endTimeSec = 12f,
+                text = "(Petikan Akustik Harmoni Intro)",
+                chordWords = listOf(
+                    ChordLyricWord("G", "(Petikan", 0f),
+                    ChordLyricWord("Em", "Akustik", 3f),
+                    ChordLyricWord("C", "Harmoni", 6f),
+                    ChordLyricWord("D", "Intro)", 9f)
+                )
             ),
-            tabNotation = listOf(
-                createArpeggioTab("C"),
-                createArpeggioTab("D"),
-                createArpeggioTab("G")
+            LyricLine(
+                id = "l_verse1_1",
+                startTimeSec = 12f,
+                endTimeSec = 20f,
+                text = "Kau begitu sempurna di mataku",
+                chordWords = listOf(
+                    ChordLyricWord("G", "Kau", 12f),
+                    ChordLyricWord("Em", "sempurna", 16f)
+                )
+            ),
+            LyricLine(
+                id = "l_verse1_2",
+                startTimeSec = 20f,
+                endTimeSec = 28f,
+                text = "Kau membuat diriku selalu memujamu",
+                chordWords = listOf(
+                    ChordLyricWord("C", "Kau", 20f),
+                    ChordLyricWord("D", "selalu", 24f)
+                )
+            ),
+            LyricLine(
+                id = "l_chorus_1",
+                startTimeSec = 28f,
+                endTimeSec = 36f,
+                text = "Janganlah kau pernah hancurkan rasa ini",
+                chordWords = listOf(
+                    ChordLyricWord("C", "Janganlah", 28f),
+                    ChordLyricWord("D", "hancurkan", 32f)
+                )
+            ),
+            LyricLine(
+                id = "l_chorus_2",
+                startTimeSec = 36f,
+                endTimeSec = 44f,
+                text = "Karena kaulah seluruh nafasku dan jiwaku",
+                chordWords = listOf(
+                    ChordLyricWord("G", "Karena", 36f),
+                    ChordLyricWord("Em", "seluruh", 40f)
+                )
+            ),
+            LyricLine(
+                id = "l_interlude",
+                startTimeSec = 44f,
+                endTimeSec = 56f,
+                text = "Tuk selamanya di dalam pelukanku",
+                chordWords = listOf(
+                    ChordLyricWord("Am", "Tuk", 44f),
+                    ChordLyricWord("Bm", "selamanya", 47f),
+                    ChordLyricWord("C", "dalam", 50f),
+                    ChordLyricWord("D", "pelukanku", 53f)
+                )
+            ),
+            LyricLine(
+                id = "l_outro",
+                startTimeSec = 56f,
+                endTimeSec = 68f,
+                text = "Sempurna... Kau begitu indah selamanya",
+                chordWords = listOf(
+                    ChordLyricWord("C", "Sempurna...", 56f),
+                    ChordLyricWord("D", "indah", 60f),
+                    ChordLyricWord("G", "selamanya", 64f)
+                )
             )
         )
 
         return PracticeSong(
             id = "song_pop_ballad",
-            title = "Acoustic Pop Jam",
-            artist = "Latihan Harmoni (G - Em - C - D)",
+            title = "Sempurna (Acoustic Jam)",
+            artist = "Latihan Kord & Lirik (G - Em - C - D)",
             bpm = 85,
             totalDurationSec = 68f,
-            sections = listOf(s1Intro, s2Verse, s3Chorus, s4Interlude, s5Outro)
+            sections = listOf(s1Intro, s2Verse, s3Chorus, s4Interlude, s5Outro),
+            lyrics = lyrics
         )
     }
 
     fun getBluesRockSong(): PracticeSong {
         val s1Intro = SongSection(
-            id = "blues_intro",
+            id = "sec_kemesraan_intro",
             name = "Intro",
             startTimeSec = 0f,
-            endTimeSec = 8f,
-            colorHex = 0xFF3B82F6,
-            chords = listOf(ChordItem("A7", 4, ChordLibrary.A7), ChordItem("E7", 4, ChordLibrary.E7)),
-            tabNotation = listOf(createArpeggioTab("A7"), createArpeggioTab("E7"))
+            endTimeSec = 10f,
+            colorHex = 0xFF38BDF8,
+            chords = listOf(
+                ChordItem("C", 4, ChordLibrary.C),
+                ChordItem("F", 4, ChordLibrary.F),
+                ChordItem("G", 4, ChordLibrary.G),
+                ChordItem("C", 4, ChordLibrary.C)
+            )
         )
 
         val s2Verse = SongSection(
-            id = "blues_verse",
-            name = "Verse 1 (12-Bar)",
-            startTimeSec = 8f,
-            endTimeSec = 28f,
-            colorHex = 0xFF06B6D4,
+            id = "sec_kemesraan_verse",
+            name = "Bait 1 (Verse)",
+            startTimeSec = 10f,
+            endTimeSec = 26f,
+            colorHex = 0xFF10B981,
             chords = listOf(
-                ChordItem("A7", 4, ChordLibrary.A7),
-                ChordItem("D7", 4, ChordLibrary.D7),
-                ChordItem("A7", 4, ChordLibrary.A7),
-                ChordItem("E7", 4, ChordLibrary.E7)
-            ),
-            tabNotation = listOf(
-                createArpeggioTab("A7"),
-                createArpeggioTab("D7"),
-                createArpeggioTab("A7"),
-                createArpeggioTab("E7")
+                ChordItem("C", 4, ChordLibrary.C),
+                ChordItem("F", 4, ChordLibrary.F),
+                ChordItem("G", 4, ChordLibrary.G),
+                ChordItem("C", 4, ChordLibrary.C)
             )
         )
 
         val s3Chorus = SongSection(
-            id = "blues_chorus",
-            name = "Chorus",
-            startTimeSec = 28f,
+            id = "sec_kemesraan_chorus",
+            name = "Reff (Chorus)",
+            startTimeSec = 26f,
             endTimeSec = 44f,
-            colorHex = 0xFFF97316,
+            colorHex = 0xFFF59E0B,
             chords = listOf(
-                ChordItem("D7", 4, ChordLibrary.D7),
-                ChordItem("A7", 4, ChordLibrary.A7),
-                ChordItem("E7", 4, ChordLibrary.E7),
-                ChordItem("A7", 4, ChordLibrary.A7)
-            ),
-            tabNotation = listOf(
-                createArpeggioTab("D7"),
-                createArpeggioTab("A7"),
-                createArpeggioTab("E7"),
-                createArpeggioTab("A7")
+                ChordItem("F", 4, ChordLibrary.F),
+                ChordItem("G", 4, ChordLibrary.G),
+                ChordItem("C", 4, ChordLibrary.C),
+                ChordItem("Am", 4, ChordLibrary.Am),
+                ChordItem("F", 4, ChordLibrary.F),
+                ChordItem("G", 4, ChordLibrary.G),
+                ChordItem("C", 4, ChordLibrary.C)
             )
         )
 
         val s4Outro = SongSection(
-            id = "blues_outro",
+            id = "sec_kemesraan_outro",
             name = "Outro",
             startTimeSec = 44f,
-            endTimeSec = 52f,
-            colorHex = 0xFF14B8A6,
-            chords = listOf(ChordItem("D7", 4, ChordLibrary.D7), ChordItem("A7", 4, ChordLibrary.A7)),
-            tabNotation = listOf(createArpeggioTab("D7"), createArpeggioTab("A7"))
+            endTimeSec = 54f,
+            colorHex = 0xFF8B5CF6,
+            chords = listOf(
+                ChordItem("F", 4, ChordLibrary.F),
+                ChordItem("G", 4, ChordLibrary.G),
+                ChordItem("C", 4, ChordLibrary.C)
+            )
+        )
+
+        val lyrics = listOf(
+            LyricLine(
+                id = "km_intro",
+                startTimeSec = 0f,
+                endTimeSec = 10f,
+                text = "(Alunan Petikan Gitar Akustik C - F - G - C)",
+                chordWords = listOf(
+                    ChordLyricWord("C", "(Alunan", 0f),
+                    ChordLyricWord("F", "Petikan", 2.5f),
+                    ChordLyricWord("G", "Gitar", 5f),
+                    ChordLyricWord("C", "Akustik)", 7.5f)
+                )
+            ),
+            LyricLine(
+                id = "km_verse_1",
+                startTimeSec = 10f,
+                endTimeSec = 18f,
+                text = "Suatu hari di kala kita duduk di tepi pantai",
+                chordWords = listOf(
+                    ChordLyricWord("C", "Suatu", 10f),
+                    ChordLyricWord("F", "duduk", 14f)
+                )
+            ),
+            LyricLine(
+                id = "km_verse_2",
+                startTimeSec = 18f,
+                endTimeSec = 26f,
+                text = "Dan memandang ombak di lautan yang kian menepi",
+                chordWords = listOf(
+                    ChordLyricWord("G", "Dan", 18f),
+                    ChordLyricWord("C", "lautan", 22f)
+                )
+            ),
+            LyricLine(
+                id = "km_chorus_1",
+                startTimeSec = 26f,
+                endTimeSec = 35f,
+                text = "Kemesraan ini janganlah cepat berlalu",
+                chordWords = listOf(
+                    ChordLyricWord("F", "Kemesraan", 26f),
+                    ChordLyricWord("G", "janganlah", 29f),
+                    ChordLyricWord("C", "berlalu", 32f)
+                )
+            ),
+            LyricLine(
+                id = "km_chorus_2",
+                startTimeSec = 35f,
+                endTimeSec = 44f,
+                text = "Kemesraan ini ingin kukenang selalu",
+                chordWords = listOf(
+                    ChordLyricWord("Am", "Kemesraan", 35f),
+                    ChordLyricWord("F", "ingin", 38f),
+                    ChordLyricWord("G", "kukenang", 40f),
+                    ChordLyricWord("C", "selalu", 42f)
+                )
+            ),
+            LyricLine(
+                id = "km_outro",
+                startTimeSec = 44f,
+                endTimeSec = 54f,
+                text = "Hatiku damai... Jiwaku tentram bersamamu",
+                chordWords = listOf(
+                    ChordLyricWord("F", "Hatiku", 44f),
+                    ChordLyricWord("G", "Jiwaku", 47f),
+                    ChordLyricWord("C", "bersamamu", 50f)
+                )
+            )
         )
 
         return PracticeSong(
-            id = "song_blues_rock",
-            title = "Midnight Blues Jam",
-            artist = "12-Bar Blues in A (A7 - D7 - E7)",
-            bpm = 100,
-            totalDurationSec = 52f,
-            sections = listOf(s1Intro, s2Verse, s3Chorus, s4Outro)
+            id = "song_kemesraan",
+            title = "Kemesraan (Folk Ballad)",
+            artist = "Latihan Kord & Lirik (C - F - G - Am)",
+            bpm = 80,
+            totalDurationSec = 54f,
+            sections = listOf(s1Intro, s2Verse, s3Chorus, s4Outro),
+            lyrics = lyrics
         )
     }
 }

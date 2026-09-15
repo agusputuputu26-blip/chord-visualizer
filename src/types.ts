@@ -12,6 +12,20 @@ export interface SongSection {
   chords: ChordItem[];
 }
 
+export interface ChordLyricWord {
+  chord: string;
+  word: string;
+  timestampSec: number;
+}
+
+export interface LyricLine {
+  id: string;
+  startTimeSec: number;
+  endTimeSec: number;
+  text: string;
+  chordWords: ChordLyricWord[];
+}
+
 export interface PracticeSong {
   id: string;
   title: string;
@@ -19,23 +33,19 @@ export interface PracticeSong {
   bpm: number;
   totalDurationSec: number;
   sections: SongSection[];
+  lyrics: LyricLine[];
   audioUrl?: string;
   audioFileName?: string;
 }
 
-export interface GuitarHeroNote {
-  id: string;
-  timestampSec: number;
-  lane: number; // 0: Hijau, 1: Merah, 2: Kuning, 3: Biru, 4: Jingga
-  durationSec?: number;
-  chordName?: string;
+export interface ActiveChordState {
+  chordName: string;
+  nextChordName: string;
+  beatsRemaining: number;
+  beatNumber: number; // 1, 2, 3, 4
+  chordProgress: number; // 0..1
+  sectionName: string;
+  frets: number[]; // [low E, A, D, G, B, high e]
+  fingers: number[];
+  baseFret: number;
 }
-
-export interface GuitarHeroSectionMarker {
-  id: string;
-  name: string;
-  timestampSec: number;
-  colorHex: string;
-}
-
-export type PracticeThemeMode = 'guitar_hero' | 'chord_tab' | 'split_both';

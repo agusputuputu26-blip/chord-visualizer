@@ -1,30 +1,18 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { DEFAULT_SONGS, generateGuitarHeroTrack } from './data/defaultSongs';
-import { PracticeSong, SongSection, PracticeThemeMode } from './types';
-import { audioSynth } from './utils/audioSynth';
-import { GuitarHeroCanvas } from './components/GuitarHeroCanvas';
+import React, { useState, useEffect, useMemo } from 'react';
+import { DEFAULT_SONGS } from './data/defaultSongs';
+import { PracticeSong, SongSection } from './types';
+import { audioEngine } from './utils/audioSynth';
 import { ChordTabDisplay } from './components/ChordTabDisplay';
 import { AudioPlayer } from './components/AudioPlayer';
-import { SectionList } from './components/SectionList';
-import { VideoExporterModal } from './components/VideoExporterModal';
-import { Music, Zap, Layers, RefreshCw } from 'lucide-react';
+import { Music, RefreshCw } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<PracticeSong>(DEFAULT_SONGS[0]);
-  const [themeMode, setThemeMode] = useState<PracticeThemeMode>('chord_tab');
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTimeSec, setCurrentTimeSec] = useState<number>(0);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [isLoopingSection, setIsLoopingSection] = useState<boolean>(false);
-  const [loopingTargetSection, setLoopingTargetSection] = useState<SongSection | null>(null);
-  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Generate Guitar Hero track notes
-  const { notes, markers } = useMemo(() => {
-    return generateGuitarHeroTrack(currentSong);
-  }, [currentSong]);
+  const [loopingTargetSection] = useState<SongSection | null>(null);
 
   // Current active section
   const activeSection = useMemo(() => {
@@ -37,11 +25,10 @@ export const App: React.FC = () => {
 
   // Audio time update handler
   useEffect(() => {
-    audioSynth.onTimeUpdate = (time) => {
-      // Handle section looping if enabled
+    audioEngine.onTimeUpdate = (time) => {
       if (isLoopingSection && loopingTargetSection) {
         if (time >= loopingTargetSection.endTimeSec) {
-          audioSynth.seek(loopingTargetSection.startTimeSec);
+          audioEngine.seek(loopingTargetSection.startTimeSec);
           setCurrentTimeSec(loopingTargetSection.startTimeSec);
           return;
         }
@@ -49,7 +36,7 @@ export const App: React.FC = () => {
       setCurrentTimeSec(time);
     };
 
-    audioSynth.onEnded = () => {
+    audioEngine.onEnded = () => {
       setIsPlaying(false);
       setCurrentTimeSec(0);
     };
@@ -57,17 +44,17 @@ export const App: React.FC = () => {
 
   const handleTogglePlay = () => {
     if (isPlaying) {
-      audioSynth.pause();
+      audioEngine.pause();
       setIsPlaying(false);
     } else {
-      audioSynth.play(currentSong, currentTimeSec);
+      audioEngine.play(currentSong, currentTimeSec);
       setIsPlaying(true);
     }
   };
 
   const handleSeek = (pos: number) => {
     setCurrentTimeSec(pos);
-    audioSynth.seek(pos);
+    audioEngine.seek(pos);
   };
 
   const handleSkip = (delta: number) => {
@@ -77,7 +64,7 @@ export const App: React.FC = () => {
 
   const handleFileUpload = (file: File) => {
     const url = URL.createObjectURL(file);
-    audioSynth.setCustomAudioUrl(url);
+    audioEngine.setCustomAudioUrl(url);
     setCurrentSong((prev) => ({
       ...prev,
       title: file.name.replace(/\.[^/.]+$/, ''),
@@ -86,19 +73,11 @@ export const App: React.FC = () => {
     }));
   };
 
-  const handleJumpToSection = (section: SongSection) => {
-    handleSeek(section.startTimeSec);
-  };
-
-  const handleToggleLoopSection = (section: SongSection) => {
-    if (isLoopingSection && loopingTargetSection?.id === section.id) {
-      setIsLoopingSection(false);
-      setLoopingTargetSection(null);
-    } else {
-      setIsLoopingSection(true);
-      setLoopingTargetSection(section);
-      handleSeek(section.startTimeSec);
-    }
+  const handleResetSong = () => {
+    audioEngine.stop();
+    setIsPlaying(false);
+    setCurrentTimeSec(0);
+    setCurrentSong(DEFAULT_SONGS[0]);
   };
 
   return (
@@ -107,33 +86,33 @@ export const App: React.FC = () => {
         {/* Navigation Header */}
         <header className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center shadow-md">
               <Music className="w-5 h-5 text-slate-950" />
             </div>
             <div>
               <h1 className="text-white font-extrabold text-base leading-tight">
-                Latihan Musik Interaktif
+                Latihan Kord & Musik
               </h1>
-              <p className="text-xs text-slate-400 font-medium">
-                {currentSong.bpm} BPM • {currentSong.sections.length} Bagian
+              <p className="text-xs text-sky-400 font-medium">
+                {currentSong.title} • {currentSong.bpm} BPM
               </p>
             </div>
           </div>
 
-          {/* Song Preset Dropdown */}
-          <div className="flex items-center gap-1.5">
+          {/* Song Preset Dropdown & Reset */}
+          <div className="flex items-center gap-2">
             <select
               value={currentSong.id}
               onChange={(e) => {
                 const s = DEFAULT_SONGS.find((x) => x.id === e.target.value);
                 if (s) {
-                  audioSynth.stop();
+                  audioEngine.stop();
                   setIsPlaying(false);
                   setCurrentTimeSec(0);
                   setCurrentSong(s);
                 }
               }}
-              className="bg-slate-800 border border-slate-700 text-sky-400 text-xs rounded-xl px-2.5 py-1.5 font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="bg-slate-800 border border-slate-700 text-amber-400 text-xs rounded-xl px-2.5 py-2 font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
             >
               {DEFAULT_SONGS.map((song) => (
                 <option key={song.id} value={song.id}>
@@ -141,71 +120,28 @@ export const App: React.FC = () => {
                 </option>
               ))}
             </select>
+
+            <button
+              onClick={handleResetSong}
+              title="Reset Lagu"
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
           </div>
         </header>
 
-        {/* Theme Selection Card */}
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-col gap-2.5">
-          <div className="flex items-center justify-between text-xs px-1">
-            <span className="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-amber-400" />
-              PILIH TEMA TAMPILAN
-            </span>
-            <span className="text-[11px] font-semibold text-amber-400">
-              {themeMode === 'guitar_hero'
-                ? 'Tema Guitar Hero'
-                : themeMode === 'chord_tab'
-                ? 'Tema Tabulasi Standar'
-                : 'Tema Gabungan'}
-            </span>
-          </div>
+        {/* Real-time Chord Display & Synchronized Scrolling Lyrics */}
+        <ChordTabDisplay
+          activeSection={activeSection}
+          lyrics={currentSong.lyrics || []}
+          currentTimeSec={currentTimeSec}
+          bpm={currentSong.bpm}
+          isPlaying={isPlaying}
+          onSeek={handleSeek}
+        />
 
-          <div className="grid grid-cols-3 gap-2">
-            {/* Option 1: Tab Standar */}
-            <button
-              onClick={() => setThemeMode('chord_tab')}
-              className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition ${
-                themeMode === 'chord_tab'
-                  ? 'bg-sky-600 text-white border-sky-400 shadow-md scale-[1.02]'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-              }`}
-            >
-              <Music className="w-4 h-4" />
-              <span className="font-bold text-xs">Tab Standar</span>
-              <span className="text-[10px] opacity-80">Fretboard & Tab</span>
-            </button>
-
-            {/* Option 2: Guitar Hero */}
-            <button
-              onClick={() => setThemeMode('guitar_hero')}
-              className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition ${
-                themeMode === 'guitar_hero'
-                  ? 'bg-red-600 text-white border-red-400 shadow-md scale-[1.02]'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-              }`}
-            >
-              <Zap className="w-4 h-4" />
-              <span className="font-bold text-xs">Guitar Hero</span>
-              <span className="text-[10px] opacity-80">Balok Meluncur</span>
-            </button>
-
-            {/* Option 3: Both */}
-            <button
-              onClick={() => setThemeMode('split_both')}
-              className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition ${
-                themeMode === 'split_both'
-                  ? 'bg-amber-600 text-white border-amber-400 shadow-md scale-[1.02]'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-              }`}
-            >
-              <span className="text-sm">🔀</span>
-              <span className="font-bold text-xs">Keduanya</span>
-              <span className="text-[10px] opacity-80">Split View</span>
-            </button>
-          </div>
-        </section>
-
-        {/* Audio Player Controller */}
+        {/* Audio Player Controller Bar */}
         <AudioPlayer
           isPlaying={isPlaying}
           currentTimeSec={currentTimeSec}
@@ -220,47 +156,9 @@ export const App: React.FC = () => {
           onToggleLoop={() => setIsLoopingSection(!isLoopingSection)}
           onFileUpload={handleFileUpload}
         />
-
-        {/* Primary Views based on Theme */}
-        {(themeMode === 'guitar_hero' || themeMode === 'split_both') && (
-          <GuitarHeroCanvas
-            notes={notes}
-            sectionMarkers={markers}
-            currentTimeSec={currentTimeSec}
-            bpm={currentSong.bpm}
-            isPlaying={isPlaying}
-            onExportVideoClick={() => setIsExportModalOpen(true)}
-            canvasRef={canvasRef}
-          />
-        )}
-
-        {(themeMode === 'chord_tab' || themeMode === 'split_both') && (
-          <ChordTabDisplay
-            activeSection={activeSection}
-            currentTimeSec={currentTimeSec}
-          />
-        )}
-
-        {/* Song Structure Panel */}
-        <SectionList
-          sections={currentSong.sections}
-          activeSection={activeSection}
-          currentPositionSec={currentTimeSec}
-          isLoopingSection={isLoopingSection}
-          onJumpToSection={handleJumpToSection}
-          onToggleLoopSection={handleToggleLoopSection}
-        />
       </div>
-
-      {/* Video Exporter Modal */}
-      {isExportModalOpen && (
-        <VideoExporterModal
-          canvasRef={canvasRef}
-          activeSection={activeSection}
-          onClose={() => setIsExportModalOpen(false)}
-        />
-      )}
     </div>
   );
 };
+
 export default App;
