@@ -1,0 +1,7 @@
+{
+  "name": "Latihan Musik",
+  "description": "Aplikasi latihan musik interaktif dengan audio player, sinkronisasi struktur lagu, kord, dan tabulasi secara real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
