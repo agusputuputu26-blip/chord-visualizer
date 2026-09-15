@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#0A0E1A" />
+      <stop offset="100%" stop-color="#1E1B4B" />
+    </linearGradient>
+    <linearGradient id="guitarBodyGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="35%" stop-color="#F59E0B" />
+      <stop offset="85%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="neckGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78350F" />
+      <stop offset="50%" stop-color="#92400E" />
+      <stop offset="100%" stop-color="#78350F" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.15" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- App Icon Rounded Container -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="url(#glowGrad)" stroke-width="4" />
+
+  <!-- Subtle musical wave background rings -->
+  <circle cx="256" cy="330" r="160" fill="none" stroke="#F59E0B" stroke-opacity="0.08" stroke-width="3" />
+  <circle cx="256" cy="330" r="195" fill="none" stroke="#38BDF8" stroke-opacity="0.06" stroke-width="2" />
+
+  <!-- Headstock and Tuning Pegs (Top) -->
+  <!-- Left Pegs -->
+  <circle cx="216" cy="65" r="7" fill="#FDE68A" />
+  <rect x="216" y="62" width="16" height="6" rx="2" fill="#FDE68A" />
+  <circle cx="212" cy="85" r="7" fill="#FDE68A" />
+  <rect x="212" y="82" width="20" height="6" rx="2" fill="#FDE68A" />
+  <circle cx="216" cy="105" r="7" fill="#FDE68A" />
+  <rect x="216" y="102" width="16" height="6" rx="2" fill="#FDE68A" />
+
+  <!-- Right Pegs -->
+  <circle cx="296" cy="65" r="7" fill="#FDE68A" />
+  <rect x="280" y="62" width="16" height="6" rx="2" fill="#FDE68A" />
+  <circle cx="300" cy="85" r="7" fill="#FDE68A" />
+  <rect x="280" y="82" width="20" height="6" rx="2" fill="#FDE68A" />
+  <circle cx="296" cy="105" r="7" fill="#FDE68A" />
+  <rect x="280" y="102" width="16" height="6" rx="2" fill="#FDE68A" />
+
+  <!-- Headstock -->
+  <path d="M 232 50 C 238 42, 274 42, 280 50 L 278 120 L 234 120 Z" fill="#92400E" stroke="#B45309" stroke-width="2" />
+  <!-- Headstock crown ornament -->
+  <path d="M 245 52 Q 256 60 267 52" fill="none" stroke="#FDE68A" stroke-width="2" />
+
+  <!-- Guitar Neck / Fretboard -->
+  <rect x="238" y="120" width="36" height="150" fill="url(#neckGrad)" />
+  <!-- Frets -->
+  <line x1="238" y1="135" x2="274" y2="135" stroke="#FDE68A" stroke-width="2" />
+  <line x1="238" y1="155" x2="274" y2="155" stroke="#FDE68A" stroke-width="2" />
+  <line x1="238" y1="178" x2="274" y2="178" stroke="#FDE68A" stroke-width="2" />
+  <line x1="238" y1="204" x2="274" y2="204" stroke="#FDE68A" stroke-width="2" />
+  <line x1="238" y1="232" x2="274" y2="232" stroke="#FDE68A" stroke-width="2" />
+  <line x1="238" y1="262" x2="274" y2="262" stroke="#FDE68A" stroke-width="2" />
+
+  <!-- Fret position markers (pearl dots) -->
+  <circle cx="256" cy="166" r="3" fill="#F8FAFC" />
+  <circle cx="256" cy="191" r="3" fill="#F8FAFC" />
+  <circle cx="256" cy="218" r="3" fill="#F8FAFC" />
+
+  <!-- Guitar Body (Acoustic Curves) with Warm Golden Amber Gradient and Glow -->
+  <path d="
+    M 256 225
+    C 275 225, 330 235, 340 280
+    C 345 305, 318 335, 310 350
+    C 345 375, 365 415, 345 455
+    C 320 495, 192 495, 167 455
+    C 147 415, 167 375, 202 350
+    C 194 335, 167 305, 172 280
+    C 182 235, 237 225, 256 225 Z
+  " fill="url(#guitarBodyGrad)" filter="url(#glow)" />
+
+  <!-- Guitar Edge Highlight / Inner Contour -->
+  <path d="
+    M 256 235
+    C 272 235, 320 244, 328 282
+    C 332 304, 308 330, 301 346
+    C 332 368, 348 404, 332 440
+    C 310 478, 202 478, 180 440
+    C 164 404, 180 368, 211 346
+    C 204 330, 180 304, 184 282
+    C 192 244, 240 235, 256 235 Z
+  " fill="none" stroke="#FDE68A" stroke-width="3" stroke-opacity="0.6" />
+
+  <!-- Soundhole Rosette & Core -->
+  <circle cx="256" cy="330" r="42" fill="#78350F" />
+  <circle cx="256" cy="330" r="39" fill="#180A04" />
+  <circle cx="256" cy="330" r="34" fill="#0A0E1A" />
+  <circle cx="256" cy="330" r="41" fill="none" stroke="#FCD34D" stroke-width="1.5" />
+  <circle cx="256" cy="330" r="45" fill="none" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,3" />
+
+  <!-- Bridge and Saddle -->
+  <rect x="226" y="420" width="60" height="16" rx="4" fill="#451A03" stroke="#270E02" stroke-width="1.5" />
+  <rect x="234" y="424" width="44" height="4" rx="2" fill="#F8FAFC" />
+  <!-- Bridge Pins -->
+  <circle cx="237" cy="431" r="1.5" fill="#F8FAFC" />
+  <circle cx="244" cy="431" r="1.5" fill="#F8FAFC" />
+  <circle cx="251" cy="431" r="1.5" fill="#F8FAFC" />
+  <circle cx="258" cy="431" r="1.5" fill="#F8FAFC" />
+  <circle cx="265" cy="431" r="1.5" fill="#F8FAFC" />
+  <circle cx="272" cy="431" r="1.5" fill="#F8FAFC" />
+
+  <!-- 6 Strings (E A D G B e) extending from Headstock to Bridge -->
+  <line x1="242" y1="120" x2="238" y2="424" stroke="#F8FAFC" stroke-width="2" stroke-opacity="0.9" />
+  <line x1="247" y1="120" x2="245" y2="424" stroke="#F8FAFC" stroke-width="1.8" stroke-opacity="0.9" />
+  <line x1="252" y1="120" x2="252" y2="424" stroke="#F8FAFC" stroke-width="1.5" stroke-opacity="0.9" />
+  <line x1="257" y1="120" x2="258" y2="424" stroke="#F8FAFC" stroke-width="1.3" stroke-opacity="0.9" />
+  <line x1="262" y1="120" x2="265" y2="424" stroke="#F8FAFC" stroke-width="1.1" stroke-opacity="0.9" />
+  <line x1="267" y1="120" x2="272" y2="424" stroke="#F8FAFC" stroke-width="1" stroke-opacity="0.9" />
+
+  <!-- Pickguard detail -->
+  <path d="M 268 335 Q 295 338 296 370 Q 296 395 272 405 Q 262 380 264 350 Z" fill="#451A03" opacity="0.85" />
+
+  <!-- Musical Note Sparkles -->
+  <g fill="#FDE68A" opacity="0.9">
+    <!-- Top right musical note -->
+    <path d="M 370 120 C 370 115 375 110 382 110 L 402 105 L 402 135 C 398 132 392 132 388 135 C 383 138 381 144 384 148 C 387 152 393 152 398 149 C 402 146 404 142 404 138 L 404 116 L 384 120 L 384 142 C 380 139 374 139 370 142 C 365 145 363 151 366 155 C 369 159 375 159 380 156 C 384 153 386 149 386 145 L 386 120 Z" />
+    
+    <!-- Top left small star sparkle -->
+    <polygon points="120,150 123,160 133,163 123,166 120,176 117,166 107,163 117,160" />
+    <!-- Bottom right sparkle -->
+    <polygon points="405,390 408,397 415,399 408,401 405,408 402,401 395,399 402,397" />
+  </g>
+</svg>

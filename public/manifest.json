@@ -1,0 +1,22 @@
+{
+  "short_name": "Latihan Kord",
+  "name": "Latihan Kord Gitar & Musik",
+  "icons": [
+    {
+      "src": "/guitar-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512 192x192 any"
+    },
+    {
+      "src": "/app-icon.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
+}
